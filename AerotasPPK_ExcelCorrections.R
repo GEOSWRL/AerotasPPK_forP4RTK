@@ -5,13 +5,12 @@
 #1. Import RTKLIB corrected position file
 #2. Import Timestamp.MRK file from DJI P4RTK flights
 #3. Calculate camera specific position from those two files
-#BONUS?
 #4. Scrape EXIF-data from original photos to append yaw, pitch, and roll columns to location file
 
 # Setup Workspace #####
-setwd("~/Desktop/RTK_PPK/20200221_TEST")
-Date <- "20200221" #in YYYYMMDD format ONLY
-FileName <- "100_0047" #probably 100_00XX of some sort
+setwd("~/Desktop/RTK_PPK/20200121_RTK")
+Date <- "20200121" #in YYYYMMDD format ONLY
+FileName <- "100_0013" #probably 100_00XX of some sort
 options(digits = 15) #preserves long format Lat/Lon decimal places
 
 #1. Import RTKLIB corrected position file and tidy up: ####
@@ -117,11 +116,10 @@ colnames(Final_Positions)[4:6] <- c("Lat_diff_m", "Lon_diff_m", "Elevation_diff_
 
 #4. Scrape EXIF-data from original photos to append ya, pitch, and roll columns to final locaiton file: ####
 library(exiftoolr)
-library(readxl)
-install_exiftool()
+#install_exiftool() #Need to run this the first time to install EXIFtool onto computer
 
 # Aim at the folder you want to find photos in (BE SURE TO ADJUST THE DATE)
-mydir <- paste0("~/Box/Research/data/Field_Days/", Date, "_Hourglass/Photos/SURVEY/", FileName)
+mydir <- paste0("~/Box/Research/data/Field_Days/", Date, "_Hourglass/Photos/", FileName)
 pics <- list.files(path=mydir, pattern=".JPG", full.names=TRUE)
 
 # Read the EXIF data
@@ -129,4 +127,22 @@ OGexif <- exif_read(pics, recursive = FALSE) #grab all EXIF data
 
 # Append the relevant fields to the Final_Positions dataframe and export the final product ####
 Export_Ready <- cbind(FileName = OGexif$FileName, Final_Positions, Yaw = OGexif$Yaw, Pitch = OGexif$Pitch, Roll = OGexif$Roll)
-write.csv(Export_Ready, row.names = FALSE, file = paste0(getwd(), "/", Date, "_", FileName, "_finalpositions.csv"))
+write.csv(Export_Ready, row.names = FALSE, quote = FALSE, 
+          file = paste0(getwd(), "/processed_files/", Date, "_", FileName, "_finalpositions.csv"))
+
+#5. Grab all the separate corrected location files and append into one single field day file ####
+#ProcessedList <- list.files(path = paste0(getwd(), "/processed_files"), pattern=".csv", full.names=TRUE)
+# load each location file
+#flight1 <- read.csv(file = ProcessedList[1], header = TRUE, sep = ",", stringsAsFactors = FALSE)
+#flight2 <- read.csv(file = ProcessedList[2], header = TRUE, sep = ",", stringsAsFactors = FALSE)
+#flight3 <- read.csv(file = ProcessedList[3], header = TRUE, sep = ",", stringsAsFactors = FALSE)
+#flight4 <- read.csv(file = ProcessedList[4], header = TRUE, sep = ",", stringsAsFactors = FALSE) #only need additional flights on certain days
+#flight5 <- read.csv(file = ProcessedList[5], header = TRUE, sep = ",", stringsAsFactors = FALSE) #can create as many as needed
+
+# Append the files together and export
+#AllFlights <- rbind(flight1, flight2, flight3)
+#colnames(AllFlights)[2:4] <- c("Lat", "Lon", "Elevation_m")
+#write.csv(AllFlights, row.names = FALSE, quote = FALSE,
+#          file = paste0(getwd(), "/processed_files/", Date, "_corrected_positions.csv"))
+
+
